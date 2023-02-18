@@ -219,8 +219,6 @@ endif()
 
 if(ENABLE_DPCPP)
   set(USE_DPCPP ON)
-  find_package(IntelSYCL REQUIRED)
-  set(Intel_SYCL_TARGET Intel::SYCL)
 endif()
 
 if (ENABLE_SCALAPACK)

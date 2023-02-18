@@ -58,6 +58,12 @@ elseif (MPI_PR)
       src-mpi-pr/dev_utils_hip.cpp
       src-mpi-pr/mpi_wrappers.c
     )
+  elseif (ENABLE_DPCPP)
+    message(STATUS "Setting Compiler for dev_utils_l0.cpp to SYCL")
+    set(COMEX_GPU_DEVICE
+      src-mpi-pr/dev_utils_l0.cpp
+      src-mpi-pr/mpi_wrappers.c
+    )    
   endif()
   set(COMEX_DEVICE
     src-mpi-pr/comex.c

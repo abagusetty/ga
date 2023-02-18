@@ -355,6 +355,8 @@ if (ENABLE_CUDA)
   endif()
 elseif(ENABLE_HIP)
   add_compile_definitions(ENABLE_DEVICE ENABLE_HIP __HIP_PLATFORM_AMD__)
+elseif(ENABLE_DPCPP)
+  add_compile_definitions(ENABLE_DEVICE ENABLE_SYCL)
 else()
   if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-fno-aggressive-loop-optimizations)
@@ -512,12 +514,6 @@ if(ENABLE_BLAS)
     ${CMAKE_CURRENT_LIST_DIR}/cmake/linalg-modules/FindStandardFortran.cmake
     DESTINATION ${INSTALL_CONFIGDIR}/linalg-cmake-modules
   )
-  if(ENABLE_DPCPP)
-    install(FILES
-      ${CMAKE_CURRENT_LIST_DIR}/cmake/FindIntelSYCL.cmake
-      DESTINATION ${INSTALL_CONFIGDIR}
-    )
-  endif()
 endif()
 
 list(REMOVE_AT CMAKE_MODULE_PATH 0)
