@@ -7,7 +7,7 @@
 #include "comex.h"
 
 /* avoid name mangling by the SYCL compiler */
-extern "C" {
+//extern "C" {
 
 extern int MPI_Wrapper_world_rank();
 extern void MPI_Wrapper_abort(int err);
@@ -74,8 +74,8 @@ int getDeviceID(void *ptr)
     return -1;
   }
   else { // USM pointers
-    sycl::device& syclDev = sycl::get_pointer_device(ptr, sycl_get_queue()->get_context());
-    return syclGetDeviceID(syclDev);
+    auto syclDev = sycl::get_pointer_device(ptr, sycl_get_queue()->get_context());
+    return syclGetDeviceID(&syclDev);
   }
 }
 
@@ -526,4 +526,4 @@ void parallelAccumulate(int op,        /* accumulate operation */
     cudaHostUnregister(dst);
   }
 }
-};
+//};

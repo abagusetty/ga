@@ -14,7 +14,7 @@
 
 #if defined(ENABLE_DEVICE)
 
-#if defined(ENABLE_CUDA)
+//#if defined(ENABLE_CUDA)
 extern int numDevices();
 extern void setDevice(int id);
 extern void mallocDevice(void **buf, int size);
@@ -26,7 +26,7 @@ extern void deviceMemset(void *ptr, int val, size_t bytes);
 extern int isHostPointer(void *ptr);
 extern void deviceAddInt(int *ptr, const int inc);
 extern void deviceAddLong(long *ptr, const long inc);
-#endif
+//#endif
 extern int _comex_dev_flag;
 extern int _comex_dev_id;
 #endif

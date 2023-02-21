@@ -741,7 +741,7 @@ int comex_init()
     MPI_Barrier(group_list->comm);
 
     /* static state */
-    fence_array = malloc(sizeof(char) * g_state.size);
+    fence_array = (char*)malloc(sizeof(char) * g_state.size);
     COMEX_ASSERT(fence_array);
     for (i = 0; i < g_state.size; ++i) {
         fence_array[i] = 0;
@@ -853,7 +853,7 @@ int comex_finalize()
 
         nb = nb_wait_for_handle();
         my_master = g_state.master[g_state.rank];
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_QUIT;
@@ -1183,7 +1183,7 @@ int comex_fence_all(comex_group_t group)
             nb_recv(NULL, 0, p_master, nb);
 
             /* post send of fence request */
-            header = malloc(sizeof(header_t));
+            header = (header_t*)malloc(sizeof(header_t));
             COMEX_ASSERT(header);
             MAYBE_MEMSET(header, 0, sizeof(header_t));
             header->operation = OP_FENCE;
@@ -1237,7 +1237,7 @@ STATIC void _fence_master(int master_rank)
         nb_recv(NULL, 0, master_rank, nb);
 
         /* post send of fence request */
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_FENCE;
@@ -1355,7 +1355,7 @@ STATIC char* pack(
     }
 
     /* allocate packed buffer now that we know the size */
-    packed_buffer = malloc(n1dim * count[0]);
+    packed_buffer = (char*)malloc(n1dim * count[0]);
     COMEX_ASSERT(packed_buffer);
 #if defined(ENABLE_DEVICE) && defined(ENABLE_STRIDED_KERNELS)
   if (is_dev) {
@@ -1505,7 +1505,7 @@ STATIC char* _generate_shm_name(int rank)
     static unsigned int counter[6] = {0};
 
     COMEX_ASSERT(rank >= 0);
-    name = malloc(SHM_NAME_SIZE*sizeof(char));
+    name = (char*)malloc(SHM_NAME_SIZE*sizeof(char));
     COMEX_ASSERT(name);
     snprintf_retval = snprintf(name, SHM_NAME_SIZE,
             "/cmx%010u%010u%c%c%c%c%c%c", getuid(), getpid(),
@@ -2231,7 +2231,7 @@ int comex_rmw(
     }
 
     /* create and prepare the header */
-    message = malloc(sizeof(header_t) + length);
+    message = (char*)malloc(sizeof(header_t) + length);
     COMEX_ASSERT(message);
     MAYBE_MEMSET(message, 0, sizeof(header_t) + length);
     header = (header_t*)message;
@@ -2291,7 +2291,7 @@ int comex_create_mutexes(int num)
         nb_t *nb = NULL;
         header_t *header = NULL;
 
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_CREATE_MUTEXES;
@@ -2333,7 +2333,7 @@ int comex_destroy_mutexes()
         nb_t *nb = NULL;
         header_t *header = NULL;
 
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_DESTROY_MUTEXES;
         header->remote_address = NULL;
@@ -2372,7 +2372,7 @@ int comex_lock(int mutex, int proc)
     world_rank = _get_world_rank(igroup, proc);
     master_rank = g_state.master[world_rank];
 
-    header = malloc(sizeof(header_t));
+    header = (header_t*)malloc(sizeof(header_t));
     COMEX_ASSERT(header);
     MAYBE_MEMSET(header, 0, sizeof(header_t));
     header->operation = OP_LOCK;
@@ -2409,7 +2409,7 @@ int comex_unlock(int mutex, int proc)
     master_rank = g_state.master[world_rank];
 
     fence_array[master_rank] = 1;
-    header = malloc(sizeof(header_t));
+    header = (header_t*)malloc(sizeof(header_t));
     COMEX_ASSERT(header);
     MAYBE_MEMSET(header, 0, sizeof(header_t));
     header->operation = OP_UNLOCK;
@@ -2490,12 +2490,12 @@ int comex_malloc(void *ptrs[], size_t size, comex_group_t group)
 #endif
 #endif
     if (is_notifier) {
-        reg_entries_local = malloc(sizeof(reg_entry_t)*g_state.node_size);
+        reg_entries_local = (reg_entry_t*)malloc(sizeof(reg_entry_t)*g_state.node_size);
     }
 
     /* allocate space for registration cache entries */
     size_entries = sizeof(reg_entry_t) * igroup->size;
-    reg_entries = malloc(size_entries);
+    reg_entries = (reg_entry_t*)malloc(size_entries);
     MAYBE_MEMSET(reg_entries, 0, sizeof(reg_entry_t)*igroup->size);
 #if DEBUG
     fprintf(stderr, "[%d] comex_malloc lr_same_hostid=%d\n", 
@@ -2652,7 +2652,7 @@ int comex_malloc(void *ptrs[], size_t size, comex_group_t group)
 
         reg_entries_local_size = sizeof(reg_entry_t)*reg_entries_local_count;
         message_size = sizeof(header_t) + reg_entries_local_size;
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         COMEX_ASSERT(message);
         header = (header_t*)message;
         header->operation = OP_MALLOC;
@@ -2726,12 +2726,12 @@ int comex_malloc_mem_dev(void *ptrs[], size_t size, comex_group_t group,
     is_notifier = _largest_world_rank_with_same_hostid(igroup) == g_state.rank;
 #endif
     if (is_notifier) {
-        reg_entries_local = malloc(sizeof(reg_entry_t)*g_state.node_size);
+        reg_entries_local = (reg_entry_t*)malloc(sizeof(reg_entry_t)*g_state.node_size);
     }
 
     /* allocate space for registration cache entries */
     size_entries = sizeof(reg_entry_t) * igroup->size;
-    reg_entries = malloc(size_entries);
+    reg_entries = (reg_entry_t*)malloc(size_entries);
     MAYBE_MEMSET(reg_entries, 0, sizeof(reg_entry_t)*igroup->size);
 
 #if DEBUG && DEBUG_VERBOSE
@@ -2861,7 +2861,7 @@ int comex_malloc_mem_dev(void *ptrs[], size_t size, comex_group_t group,
            g_state.rank, reg_entries_local_count); 
 #endif 
         message_size = sizeof(header_t) + reg_entries_local_size;
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         COMEX_ASSERT(message);
         header = (header_t*)message;
         header->operation = OP_MALLOC;
@@ -2927,12 +2927,12 @@ int comex_malloc_dev(void *ptrs[], size_t size, comex_group_t group)
         g_state.node_size, smallest_rank_with_same_hostid, largest_rank_with_same_hostid,
         num_progress_ranks_per_node, is_node_ranks_packed);
     if (is_notifier) {
-        reg_entries_local = malloc(sizeof(reg_entry_t)*g_state.node_size);
+        reg_entries_local = (reg_entry_t*)malloc(sizeof(reg_entry_t)*g_state.node_size);
     }
 
     /* allocate space for registration cache entries */
     size_entries = sizeof(reg_entry_t) * igroup->size;
-    reg_entries = malloc(size_entries);
+    reg_entries = (reg_entry_t*)malloc(size_entries);
     MAYBE_MEMSET(reg_entries, 0, sizeof(reg_entry_t)*igroup->size);
 
     /* allocate and register segment */
@@ -3027,7 +3027,7 @@ int comex_malloc_dev(void *ptrs[], size_t size, comex_group_t group)
 
         reg_entries_local_size = sizeof(reg_entry_t)*reg_entries_local_count;
         message_size = sizeof(header_t) + reg_entries_local_size;
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         COMEX_ASSERT(message);
         header = (header_t*)message;
         header->operation = OP_MALLOC;
@@ -3427,7 +3427,7 @@ int comex_free(void *ptr, comex_group_t group)
 #endif
 #endif
     if (is_notifier) {
-      rank_ptrs = malloc(sizeof(rank_ptr_t)*g_state.node_size);
+      rank_ptrs = (rank_ptr_t*)malloc(sizeof(rank_ptr_t)*g_state.node_size);
     }
 
     /* allocate receive buffer for exchange of pointers */
@@ -3530,7 +3530,7 @@ int comex_free(void *ptr, comex_group_t group)
 
       rank_ptrs_local_size = sizeof(rank_ptr_t) * reg_entries_local_count;
       message_size = sizeof(header_t) + rank_ptrs_local_size;
-      message = malloc(message_size);
+      message = (char*)malloc(message_size);
       COMEX_ASSERT(message);
       header = (header_t*)message;
       header->operation = OP_FREE;
@@ -3600,7 +3600,7 @@ int comex_free_dev(void *ptr, comex_group_t group)
         g_state.node_size, smallest_rank_with_same_hostid, largest_rank_with_same_hostid,
         num_progress_ranks_per_node, is_node_ranks_packed);
     if (is_notifier) {
-      rank_ptrs = malloc(sizeof(rank_ptr_t)*g_state.node_size);
+      rank_ptrs = (rank_ptr_t*)malloc(sizeof(rank_ptr_t)*g_state.node_size);
     }
 
     /* allocate receive buffer for exchange of pointers */
@@ -3700,7 +3700,7 @@ int comex_free_dev(void *ptr, comex_group_t group)
 
       rank_ptrs_local_size = sizeof(rank_ptr_t) * reg_entries_local_count;
       message_size = sizeof(header_t) + rank_ptrs_local_size;
-      message = malloc(message_size);
+      message = (char*)malloc(message_size);
       COMEX_ASSERT(message);
       header = (header_t*)message;
       header->operation = OP_FREE;
@@ -4256,12 +4256,12 @@ STATIC void _put_packed_handler(header_t *header, char *payload, int proc)
 
     if (use_eager) {
         packed_buffer = payload+sizeof(stride_t);
-        unpack(packed_buffer, mapped_offset,
+        unpack(packed_buffer, (char*)mapped_offset,
                 stride->stride, stride->count, stride->stride_levels, reg_entry->use_dev);
     }
     else {
         if ((unsigned)header->length > static_server_buffer_size) {
-            packed_buffer = malloc(header->length);
+            packed_buffer = (char*)malloc(header->length);
         }
         else {
             packed_buffer = static_server_buffer;
@@ -4280,7 +4280,7 @@ STATIC void _put_packed_handler(header_t *header, char *payload, int proc)
             } while (bytes_remaining > 0);
         }
 
-        unpack(packed_buffer, mapped_offset,
+        unpack(packed_buffer, (char*)mapped_offset,
                 stride->stride, stride->count, stride->stride_levels, reg_entry->use_dev);
 
         if ((unsigned)header->length > static_server_buffer_size) {
@@ -4392,7 +4392,7 @@ STATIC void _put_iov_handler(header_t *header, int proc)
 
     assert(OP_PUT_IOV == header->operation);
 
-    iov_buf = malloc(header->length);
+    iov_buf = (char*)malloc(header->length);
     COMEX_ASSERT(iov_buf);
     server_recv(iov_buf, header->length, proc);
 
@@ -4418,7 +4418,7 @@ STATIC void _put_iov_handler(header_t *header, int proc)
 #endif
 
     if ((unsigned)(bytes*limit) > static_server_buffer_size) {
-        packed_buffer = malloc(bytes*limit);
+        packed_buffer = (char*)malloc(bytes*limit);
         COMEX_ASSERT(packed_buffer);
     }
     else {
@@ -4441,14 +4441,14 @@ STATIC void _put_iov_handler(header_t *header, int proc)
     if (!reg_entry->use_dev) {
 #endif
       for (i=0; i<limit; ++i) {
-        ptr = mapped_offset + (ptrdiff_t)(dst[i]-dst[0]);
+        (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[i]-(ptrdiff_t)dst[0]);
         (void)memcpy(ptr, &packed_buffer[packed_index], bytes);
         packed_index += bytes;
       }
 #ifdef ENABLE_DEVICE
     } else {
       for (i=0; i<limit; ++i) {
-        ptr = mapped_offset + (ptrdiff_t)(dst[i]-dst[0]);
+        (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[i]-(ptrdiff_t)dst[0]);
         PROFILE_BEG()
         copyToDevice(ptr, &packed_buffer[packed_index], bytes);
         PROFILE_END(t_cpy_to_dev)
@@ -4583,7 +4583,7 @@ STATIC void _get_packed_handler(header_t *header, char *payload, int proc)
     COMEX_ASSERT(reg_entry);
     mapped_offset = _get_offset_memory(reg_entry, header->remote_address);
 
-    packed_buffer = pack(mapped_offset,
+    packed_buffer = pack((char*)mapped_offset,
             stride_src->stride, stride_src->count, stride_src->stride_levels,
             &packed_index, reg_entry->use_dev);
 
@@ -4708,7 +4708,7 @@ STATIC void _get_iov_handler(header_t *header, int proc)
 
     assert(OP_GET_IOV == header->operation);
 
-    iov_buf = malloc(header->length);
+    iov_buf = (char*)malloc(header->length);
     COMEX_ASSERT(iov_buf);
     server_recv(iov_buf, header->length, proc);
 
@@ -4734,7 +4734,7 @@ STATIC void _get_iov_handler(header_t *header, int proc)
 #endif
 
     if ((unsigned)(bytes*limit) > static_server_buffer_size) {
-        packed_buffer = malloc(bytes*limit);
+        packed_buffer = (char*)malloc(bytes*limit);
         COMEX_ASSERT(packed_buffer);
     }
     else {
@@ -4756,14 +4756,14 @@ STATIC void _get_iov_handler(header_t *header, int proc)
     if (!reg_entry->use_dev) {
 #endif
       for (i=0; i<limit; ++i) {
-        ptr = mapped_offset + (ptrdiff_t)(src[i]-src[0]);
+        (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[i]-(ptrdiff_t)src[0]);
         (void)memcpy(&packed_buffer[packed_index], ptr, bytes);
         packed_index += bytes;
       }
 #ifdef ENABLE_DEVICE
     } else {
       for (i=0; i<limit; ++i) {
-        ptr = mapped_offset + (ptrdiff_t)(src[i]-src[0]);
+        (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[i]-(ptrdiff_t)src[0]);
         PROFILE_BEG()
         copyToHost(&packed_buffer[packed_index], ptr, bytes);
         PROFILE_END(t_cpy_to_host)
@@ -4858,7 +4858,7 @@ STATIC void _acc_handler(header_t *header, char *scale, int proc)
     }
     else {
         if ((unsigned)header->length > static_server_buffer_size) {
-            acc_buffer = malloc(header->length);
+            acc_buffer = (char*)malloc(header->length);
         }
         else {
             acc_buffer = static_server_buffer;
@@ -4904,7 +4904,7 @@ STATIC void _acc_handler(header_t *header, char *scale, int proc)
 #ifdef ENABLE_DEVICE
     } else {
       /* Assume no static buffer available. Create buffer to receive data */
-      acc_buffer = malloc(header->length);
+      acc_buffer = (char*)malloc(header->length);
       {
         char *buf = (char*)acc_buffer;
         int bytes_remaining = header->length;
@@ -5015,7 +5015,7 @@ STATIC void _acc_packed_handler(header_t *header, char *payload, int proc)
     }
     else {
         if ((unsigned)header->length > static_server_buffer_size) {
-            acc_buffer = malloc(header->length);
+            acc_buffer = (char*)malloc(header->length);
         }
         else {
             acc_buffer = static_server_buffer;
@@ -5046,7 +5046,7 @@ STATIC void _acc_packed_handler(header_t *header, char *payload, int proc)
     }
     {
         char *packed_buffer = acc_buffer;
-        char *dst = mapped_offset;
+        char *dst = (char*)mapped_offset;
         int *dst_stride = stride->stride;
         int *count = stride->count;
         int stride_levels = stride->stride_levels;
@@ -5121,7 +5121,7 @@ STATIC void _acc_packed_handler(header_t *header, char *payload, int proc)
       /* source buffer is on host, destination buffer is on device */
       {
         int src_stride[7];
-        char *dst = mapped_offset;
+        char *dst = (char*)mapped_offset;
         int *dst_stride = stride->stride;
         int *count = stride->count;
         int stride_levels = stride->stride_levels;
@@ -5136,7 +5136,7 @@ STATIC void _acc_packed_handler(header_t *header, char *payload, int proc)
       }
 #else
       {
-        char *packed_buffer = acc_buffer;
+        char *packed_buffer = (char*)acc_buffer;
         int i, j;
         long dst_idx;  /* index offset of current block position to ptr */
         int n1dim;  /* number of 1 dim block */
@@ -5286,7 +5286,7 @@ STATIC void _acc_iov_handler(header_t *header, char *scale, int proc)
         default: COMEX_ASSERT(0);
     }
 
-    iov_buf = malloc(header->length);
+    iov_buf = (char*)malloc(header->length);
     COMEX_ASSERT(iov_buf);
     server_recv(iov_buf, header->length, proc);
 
@@ -5307,7 +5307,7 @@ STATIC void _acc_iov_handler(header_t *header, char *scale, int proc)
     COMEX_ASSERT(iov_off == header->length);
 
     if ((unsigned)(bytes*limit) > static_server_buffer_size) {
-        packed_buffer = malloc(bytes*limit);
+        packed_buffer = (char*)malloc(bytes*limit);
     }
     else {
         packed_buffer = static_server_buffer;
@@ -5333,7 +5333,7 @@ STATIC void _acc_iov_handler(header_t *header, char *scale, int proc)
     if (!reg_entry->use_dev) {
 #endif
       for (i=0; i<limit; ++i) {
-        ptr = mapped_offset + (ptrdiff_t)(dst[i]-dst[0]);
+        (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[i]-(ptrdiff_t)dst[0]);
         _acc(acc_type, bytes, ptr, &packed_buffer[packed_index], scale);
         packed_index += bytes;
       }
@@ -5350,7 +5350,7 @@ STATIC void _acc_iov_handler(header_t *header, char *scale, int proc)
         PROFILE_BEG()
         copyToDevice(dbuf, &packed_buffer[packed_index], bytes);
         PROFILE_END(t_cpy_to_dev)
-        ptr = mapped_offset + (ptrdiff_t)(dst[i]-dst[0]);
+        (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[i]-(ptrdiff_t)dst[0]);
         _acc_dev(acc_type, bytes, ptr, dbuf, scale);
         packed_index += bytes;
       }
@@ -5433,14 +5433,14 @@ STATIC void _fetch_and_add_handler(header_t *header, char *payload, int proc)
     if (!reg_entry->use_dev) {
 #endif
     if (sizeof(int) == header->length) {
-        value_int = malloc(sizeof(int));
+        value_int = (int*)malloc(sizeof(int));
         *value_int = *((int*)mapped_offset); /* "fetch" */
         *((int*)mapped_offset) += *((int*)payload); /* "add" */
         server_send(value_int, sizeof(int), proc);
         free(value_int);
     }
     else if (sizeof(long) == header->length) {
-        value_long = malloc(sizeof(long));
+        value_long = (long*)malloc(sizeof(long));
         *value_long = *((long*)mapped_offset); /* "fetch" */
         *((long*)mapped_offset) += *((long*)payload); /* "add" */
         server_send(value_long, sizeof(long), proc);
@@ -5452,19 +5452,19 @@ STATIC void _fetch_and_add_handler(header_t *header, char *payload, int proc)
 #ifdef ENABLE_DEVICE
     } else {
       if (sizeof(int) == header->length) {
-        value_int = malloc(sizeof(int));
+        value_int = (int*)malloc(sizeof(int));
         PROFILE_BEG()
         copyToHost(value_int,mapped_offset,sizeof(int)); /* "fetch" */
         PROFILE_END(t_cpy_to_host)
-        deviceAddInt(mapped_offset, *((int*)payload)); /* "add" */
+        deviceAddInt((int*)mapped_offset, *((int*)payload)); /* "add" */
         server_send(value_int, sizeof(int), proc);
         free(value_int);
       }
       else if (sizeof(long) == header->length) {
-        value_long = malloc(sizeof(long));
+        value_long = (long*)malloc(sizeof(long));
         PROFILE_BEG()
         copyToHost(value_long,mapped_offset,sizeof(long)); /* "fetch" */
-        deviceAddLong(mapped_offset, *((long*)payload)); /* "add" */
+        deviceAddLong((long*)mapped_offset, *((long*)payload)); /* "add" */
         PROFILE_END(t_cpy_to_host)
         server_send(value_long, sizeof(long), proc);
         free(value_long);
@@ -5510,14 +5510,14 @@ STATIC void _swap_handler(header_t *header, char *payload, int proc)
     mapped_offset = _get_offset_memory(reg_entry, header->remote_address);
     
     if (sizeof(int) == header->length) {
-        value_int = malloc(sizeof(int));
+        value_int = (int*)malloc(sizeof(int));
         *value_int = *((int*)mapped_offset); /* "fetch" */
         *((int*)mapped_offset) = *((int*)payload); /* "swap" */
         server_send(value_int, sizeof(int), proc);
         free(value_int);
     }
     else if (sizeof(long) == header->length) {
-        value_long = malloc(sizeof(long));
+        value_long = (long*)malloc(sizeof(long));
         *value_long = *((long*)mapped_offset); /* "fetch" */
         *((long*)mapped_offset) = *((long*)payload); /* "swap" */
         server_send(value_long, sizeof(long), proc);
@@ -5600,7 +5600,7 @@ STATIC void _lock_handler(header_t *header, int proc)
         fprintf(stderr, "[%d] _lq_push rank=%d req_by=%d id=%d\n",
                 g_state.rank, rank, proc, id);
 #endif
-        lock = malloc(sizeof(lock_t));
+        lock = (lock_t*)malloc(sizeof(lock_t));
         lock->next = NULL;
         lock->rank = proc;
 
@@ -6782,14 +6782,14 @@ STATIC void nb_wait_for_recv1(nb_t *nb)
             COMEX_ASSERT(stride->stride);
             COMEX_ASSERT(stride->count);
             COMEX_ASSERT(stride->stride_levels);
-              unpack(nb->recv_head->message, stride->ptr,
+              unpack((char*)nb->recv_head->message, (char*)stride->ptr,
                     stride->stride, stride->count, stride->stride_levels,on_dev);
             free(stride);
         }
 
         if (NULL != nb->recv_head->iov) {
             int i = 0;
-            char *message = nb->recv_head->message;
+            char *message = (char*)nb->recv_head->message;
             int off = 0;
             comex_giov_t *iov = nb->recv_head->iov;
 #ifdef ENABLE_DEVICE
@@ -6868,14 +6868,14 @@ STATIC int nb_test_for_recv1(nb_t *nb, message_t **save_recv_head,
             COMEX_ASSERT(stride->stride);
             COMEX_ASSERT(stride->count);
             COMEX_ASSERT(stride->stride_levels);
-            unpack(nb->recv_head->message, stride->ptr,
+            unpack((char*)nb->recv_head->message, (char*)stride->ptr,
                 stride->stride, stride->count, stride->stride_levels,on_dev);
             free(stride);
           }
 
           if (NULL != nb->recv_head->iov) {
             int i = 0;
-            char *message = nb->recv_head->message;
+            char *message = (char*)nb->recv_head->message;
             int off = 0;
             comex_giov_t *iov = nb->recv_head->iov;
             for (i=0; i<iov->count; ++i) {
@@ -7133,7 +7133,7 @@ STATIC void nb_put(void *src, void *dst, int bytes, int proc, nb_t *nb)
         else {
             message_size = sizeof(header_t);
         }
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         header = (header_t*)message;
         header->operation = OP_PUT;
         MAYBE_MEMSET(header, 0, sizeof(header_t));
@@ -7189,7 +7189,7 @@ STATIC void nb_put(void *src, void *dst, int bytes, int proc, nb_t *nb)
                   buf += size;
 #if (defined(ENABLE_DEVICE) && !defined(ENABLE_GPU_AWARE_MPI))
                 } else {
-                  tsrc += size;
+                  (char*)tsrc += size;
                 }
 #endif
                 bytes_remaining -= size;
@@ -7314,7 +7314,7 @@ STATIC void nb_get(void *src, void *dst, int bytes, int proc, nb_t *nb)
         reg_entry_t *reg_entry = NULL;
 
         master_rank = g_state.master[proc];
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_GET;
@@ -7347,7 +7347,7 @@ STATIC void nb_get(void *src, void *dst, int bytes, int proc, nb_t *nb)
             int size = bytes_remaining>max_message_size ?
               max_message_size : bytes_remaining;
             nb_recv(tbuf, size, master_rank, nb);
-            tbuf += size;
+            (char*)tbuf += size;
             bytes_remaining -= size;
           } while (bytes_remaining > 0);
           nb_send_header(header, sizeof(header_t), master_rank, nb);
@@ -7581,7 +7581,7 @@ STATIC void nb_acc(int datatype, void *scale,
         else {
             message_size = sizeof(header_t) + scale_size;
         }
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         COMEX_ASSERT(message);
         header = (header_t*)message;
         header->operation = operation;
@@ -7633,9 +7633,9 @@ STATIC void nb_acc(int datatype, void *scale,
             nb_send_buffer(buf, size, master_rank, nb);
 #ifdef ENABLE_DEVICE
             if (on_host) {
-              buf += size;
+              (char*)buf += size;
             } else {
-              tsrc += size;
+              (char*)tsrc += size;
             }
 #else
             buf += size;
@@ -7787,10 +7787,10 @@ STATIC void nb_puts(
           }
           if (on_host) {
             PROFILE_BEG()
-            copyToDevice((char*)dst+dst_idx, (char*)src+src_idx, count[0]);
+            copyToDevice((ptrdiff_t)dst+dst_idx, (char*)src+src_idx, count[0]);
             PROFILE_END(t_cpy_to_dev)
           } else {
-            copyDevToDev((char*)dst+dst_idx, (char*)src+src_idx, count[0]);
+            copyDevToDev((ptrdiff_t)dst+dst_idx, (char*)src+src_idx, count[0]);
           }
         }
 #endif
@@ -7972,7 +7972,7 @@ STATIC void nb_puts_packed(
     }
 #endif
 
-    packed_buffer = pack(src, src_stride, count, stride_levels, &packed_index, is_dev);
+    packed_buffer = pack((char*)src, src_stride, count, stride_levels, &packed_index, is_dev);
 
     COMEX_ASSERT(NULL != packed_buffer);
     COMEX_ASSERT(packed_index > 0);
@@ -7993,7 +7993,7 @@ STATIC void nb_puts_packed(
         else {
             message_size = sizeof(header_t)+sizeof(stride_t);
         }
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         header = (header_t*)message;
         header->operation = OP_PUT_PACKED;
         header->remote_address = dst;
@@ -8099,7 +8099,7 @@ STATIC void nb_puts_datatype(
         /* only fence on the master */
         fence_array[master_rank] = 1;
         message_size = sizeof(header_t) + sizeof(stride_t);
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         header = (header_t*)message;
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_PUT_DATATYPE;
@@ -8241,20 +8241,20 @@ STATIC void nb_gets(
           if (reg_entry->use_dev && on_host) {
             /* device to host */
             PROFILE_BEG()
-            copyToHost((char*)dst+dst_idx, (char*)src+src_idx, count[0]);
+            copyToHost((ptrdiff_t)dst+dst_idx, (char*)src+src_idx, count[0]);
             PROFILE_END(t_cpy_to_host)
           } else if (!reg_entry->use_dev && on_host) {
             /* host to device */
             PROFILE_BEG()
-            copyToDevice((char*)dst+dst_idx, (char*)src+src_idx, count[0]);
+            copyToDevice((ptrdiff_t)dst+dst_idx, (char*)src+src_idx, count[0]);
             PROFILE_END(t_cpy_to_dev)
           } else if (reg_entry->use_dev && !on_host) {
             /* device to device */
             comex_set_local_dev();
-            copyDevToDev((char*)dst+dst_idx, (char*)src+src_idx, count[0]);
+            copyDevToDev((ptrdiff_t)dst+dst_idx, (char*)src+src_idx, count[0]);
           } else {
             /* host to host */
-            memcpy((char*)dst+dst_idx, (char*)src+src_idx, count[0]);
+            memcpy((ptrdiff_t)dst+dst_idx, (char*)src+src_idx, count[0]);
           }
         }
 #endif
@@ -8315,21 +8315,21 @@ STATIC void nb_gets(
           if (reg_entry->use_dev && on_host) {
             /* device to host */
             PROFILE_BEG()
-            copyToHost((char*)dst+dst_idx, (char*)mapped_offset+src_idx, count[0]);
+            copyToHost((void*)((ptrdiff_t)dst+dst_idx), (char*)mapped_offset+src_idx, count[0]);
             PROFILE_END(t_cpy_to_host)
           } else if (!reg_entry->use_dev && on_host) {
             /* host to device */
             PROFILE_BEG()
-            copyToDevice((char*)dst+dst_idx, (char*)mapped_offset+src_idx, count[0]);
+            copyToDevice((void*)((ptrdiff_t)dst+dst_idx), (char*)mapped_offset+src_idx, count[0]);
             PROFILE_END(t_cpy_to_dev)
           } else if (reg_entry->use_dev && !on_host) {
             /* device to device */
             comex_set_local_dev();
-            copyPeerToPeer((char*)dst+dst_idx, _device_map[g_state.rank],
+            copyPeerToPeer((void*)((ptrdiff_t)dst+dst_idx), _device_map[g_state.rank],
                 (char*)mapped_offset+src_idx, _device_map[proc], count[0]);
           } else {
             /* host to host */
-            memcpy((char*)dst+dst_idx, (char*)mapped_offset+src_idx, count[0]);
+            memcpy((void*)((ptrdiff_t)dst+dst_idx), (char*)mapped_offset+src_idx, count[0]);
           }
         }
         PROFILE_BEG()
@@ -8468,7 +8468,7 @@ STATIC void nb_gets_packed(
         master_rank = g_state.master[proc];
 
         message_size = sizeof(header_t) + sizeof(stride_t);
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         header = (header_t*)message;
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
@@ -8481,7 +8481,7 @@ STATIC void nb_gets_packed(
         recv_size = _packed_size(stride_dst->stride,
                 stride_dst->count, stride_dst->stride_levels);
         COMEX_ASSERT(recv_size > 0);
-        packed_buffer = malloc(recv_size);
+        packed_buffer = (char*)malloc(recv_size);
         COMEX_ASSERT(packed_buffer);
         {
             /* prepost all receives backward */
@@ -8573,7 +8573,7 @@ STATIC void nb_gets_datatype(
         master_rank = g_state.master[proc];
 
         message_size = sizeof(header_t) + sizeof(stride_t);
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         header = (header_t*)message;
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
@@ -8704,10 +8704,10 @@ STATIC void nb_accs(
             PROFILE_BEG()
             copyToDevice(ptr, (char*)src+src_idx, count[0]);
             PROFILE_END(t_cpy_to_dev)
-            _acc_dev(datatype, count[0], (char*)dst+dst_idx, ptr, scale);
+            _acc_dev(datatype, count[0], (ptrdiff_t)dst+dst_idx, ptr, scale);
           } else {
             comex_set_local_dev();
-            _acc_dev(datatype, count[0], (char*)dst+dst_idx, (char*)src+src_idx, scale);
+            _acc_dev(datatype, count[0], (ptrdiff_t)dst+dst_idx, (char*)src+src_idx, scale);
           }
         }
         if (on_host) {
@@ -8920,7 +8920,7 @@ STATIC void nb_accs_packed(
     }
 #endif
 
-    packed_buffer = pack(src, src_stride, count, stride_levels, &packed_index, is_dev);
+    packed_buffer = pack((char*)src, src_stride, count, stride_levels, &packed_index, is_dev);
 
     COMEX_ASSERT(NULL != packed_buffer);
     COMEX_ASSERT(packed_index > 0);
@@ -8974,7 +8974,7 @@ STATIC void nb_accs_packed(
         else {
             message_size = sizeof(header_t) + scale_size + sizeof(stride_t);
         }
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         COMEX_ASSERT(message);
         header = (header_t*)message;
         header->operation = operation;
@@ -9135,7 +9135,7 @@ STATIC void nb_putv(
               bytes = iov[i].bytes;
               limit = iov[i].count;
               for (j=0; j<limit; j++) {
-                ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                 PROFILE_BEG()
                 copyToDevice(ptr, src[j], bytes);
                 PROFILE_END(t_cpy_to_dev)
@@ -9157,7 +9157,7 @@ STATIC void nb_putv(
               bytes = iov[i].bytes;
               limit = iov[i].count;
               for (j=0; j<limit; j++) {
-                ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                 PROFILE_BEG()
                 copyPeerToPeer(ptr, _device_map[proc], src[j],
                     _device_map[g_state.rank], bytes);
@@ -9180,7 +9180,7 @@ STATIC void nb_putv(
               bytes = iov[i].bytes;
               limit = iov[i].count;
               for (j=0; j<limit; j++) {
-                ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                 PROFILE_BEG()
                 copyToHost(ptr, src[j], bytes);
                 PROFILE_END(t_cpy_to_dev)
@@ -9200,7 +9200,7 @@ STATIC void nb_putv(
               bytes = iov[i].bytes;
               limit = iov[i].count;
               for (j=0; j<limit; j++) {
-                ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                 (void)memcpy(ptr,src[j],bytes);
               }
             }
@@ -9258,7 +9258,7 @@ STATIC void nb_putv_packed(comex_giov_t *iov, int proc, nb_t *nb)
 
     /* allocate compressed iov */
     iov_size = 2*limit*sizeof(void*) + 2*sizeof(int);
-    iov_buf = malloc(iov_size);
+    iov_buf = (char*)malloc(iov_size);
     COMEX_ASSERT(iov_buf);
     iov_off = 0;
     /* copy limit */
@@ -9277,18 +9277,18 @@ STATIC void nb_putv_packed(comex_giov_t *iov, int proc, nb_t *nb)
 
     /* allocate send buffer */
     packed_size = bytes * limit;
-    packed_buffer = malloc(packed_size);
+    packed_buffer = (char*)malloc(packed_size);
     COMEX_ASSERT(packed_buffer);
     packed_index = 0;
 #ifdef ENABLE_DEVICE
     if (on_host) {
       tsrc = src;
     } else {
-      tbuf = malloc(limit*bytes);
+      tbuf = (void*)malloc(limit*bytes);
       tsrc = (void**)malloc(limit*sizeof(void*));
       tsrc[0] = tbuf;
       for (i=1; i<limit; i++) {
-        tsrc[i] = tsrc[i-1]+bytes;
+        (ptrdiff_t)tsrc[i] = (ptrdiff_t)tsrc[i-1]+bytes;
       }
       for (i=0; i<limit; i++) {
         copyToHost(tsrc[i],src[i],bytes);
@@ -9314,7 +9314,7 @@ STATIC void nb_putv_packed(comex_giov_t *iov, int proc, nb_t *nb)
         /* only fence on the master */
         fence_array[master_rank] = 1;
 
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_PUT_IOV;
@@ -9456,7 +9456,7 @@ STATIC void nb_getv(
                 bytes = iov[i].bytes;
                 limit = iov[i].count;
                 for (j=0; j<limit; j++) {
-                  ptr = mapped_offset + (ptrdiff_t)(src[j]-src0);
+                  (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[j]-(ptrdiff_t)src0);
                   PROFILE_BEG()
                   copyToHost(dst[j], ptr, bytes);
                   PROFILE_END(t_cpy_to_host)
@@ -9477,12 +9477,12 @@ STATIC void nb_getv(
                 limit = iov[i].count;
                 if (devBufID == reg_entry->dev_id) {
                   for (j=0; j<limit; j++) {
-                    ptr = mapped_offset + (ptrdiff_t)(src[j]-src0);
+                    (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[j]-(ptrdiff_t)src0);
                     copyDevToDev(dst[j], ptr, bytes);
                   }
                 } else {
                   for (j=0; j<limit; j++) {
-                    ptr = mapped_offset + (ptrdiff_t)(src[j]-src0);
+                    (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[j]-(ptrdiff_t)src0);
                     copyPeerToPeer(dst[j], devBufID, ptr, reg_entry->dev_id, bytes);
                   }
                 }
@@ -9501,7 +9501,7 @@ STATIC void nb_getv(
                 bytes = iov[i].bytes;
                 limit = iov[i].count;
                 for (j=0; j<limit; j++) {
-                  ptr = mapped_offset + (ptrdiff_t)(src[j]-src0);
+                  (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[j]-(ptrdiff_t)src0);
                   PROFILE_BEG()
                   copyToDevice(dst[j], ptr, bytes);
                   PROFILE_END(t_cpy_to_host)
@@ -9517,7 +9517,7 @@ STATIC void nb_getv(
                 bytes = iov[i].bytes;
                 limit = iov[i].count;
                 for (j=0; j<limit; j++) {
-                  ptr = mapped_offset + (ptrdiff_t)(src[j]-src0);
+                  (ptrdiff_t)ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)src[j]-(ptrdiff_t)src0);
                   (void)memcpy(dst[j], ptr, bytes);
                 }
               }
@@ -9567,7 +9567,7 @@ STATIC void nb_getv_packed(comex_giov_t *iov, int proc, nb_t *nb)
 
     /* allocate compressed iov */
     iov_size = 2*limit*sizeof(void*) + 2*sizeof(int);
-    iov_buf = malloc(iov_size);
+    iov_buf = (char*)malloc(iov_size);
     iov_off = 0;
     COMEX_ASSERT(iov_buf);
     /* copy limit */
@@ -9585,13 +9585,13 @@ STATIC void nb_getv_packed(comex_giov_t *iov, int proc, nb_t *nb)
     COMEX_ASSERT(iov_off == iov_size);
 
     /* copy given iov for later */
-    iov_copy = malloc(sizeof(comex_giov_t));
+    iov_copy = (comex_giov_t*)malloc(sizeof(comex_giov_t));
     iov_copy->bytes = bytes;
     iov_copy->count = limit;
-    iov_copy->src = malloc(sizeof(void*)*iov->count);
+    iov_copy->src = (void**)malloc(sizeof(void*)*iov->count);
     COMEX_ASSERT(iov_copy->src);
     (void)memcpy(iov_copy->src, iov->src, sizeof(void*)*iov->count);
-    iov_copy->dst = malloc(sizeof(void*)*iov->count);
+    iov_copy->dst = (void**)malloc(sizeof(void*)*iov->count);
     COMEX_ASSERT(iov_copy->dst);
     (void)memcpy(iov_copy->dst, iov->dst, sizeof(void*)*iov->count);
 
@@ -9603,14 +9603,14 @@ STATIC void nb_getv_packed(comex_giov_t *iov, int proc, nb_t *nb)
 
     /* allocate recv buffer */
     packed_size = bytes * limit;
-    packed_buffer = malloc(packed_size);
+    packed_buffer = (char*)malloc(packed_size);
     COMEX_ASSERT(packed_buffer);
 
     {
         header_t *header = NULL;
         int master_rank = g_state.master[proc];
 
-        header = malloc(sizeof(header_t));
+        header = (header_t*)malloc(sizeof(header_t));
         COMEX_ASSERT(header);
         MAYBE_MEMSET(header, 0, sizeof(header_t));
         header->operation = OP_GET_IOV;
@@ -9782,7 +9782,7 @@ STATIC void nb_accv(
                   mapped_offset = _get_offset_memory(reg_entry, iov[0].dst[0]);
                   dst0 = iov[0].dst[0];
                   for (j=0; j<limit; j++) {
-                    l_ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                    (ptrdiff_t)l_ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                     PROFILE_BEG()
                     copyToDevice(ptr, src[j], bytes);
                     PROFILE_END(t_cpy_to_dev)
@@ -9814,7 +9814,7 @@ STATIC void nb_accv(
                   mapped_offset = _get_offset_memory(reg_entry, iov[0].dst[0]);
                   dst0 = iov[0].dst[0];
                   for (j=0; j<limit; j++) {
-                    l_ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                    (ptrdiff_t)l_ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                     PROFILE_BEG()
                     copyPeerToPeer(ptr, _device_map[proc], src[j],
                         _device_map[g_state.rank], bytes);
@@ -9842,7 +9842,7 @@ STATIC void nb_accv(
                   mapped_offset = _get_offset_memory(reg_entry, iov[0].dst[0]);
                   dst0 = iov[0].dst[0];
                   for (j=0; j<limit; j++) {
-                    l_ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                    (ptrdiff_t)l_ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                     PROFILE_BEG()
                     copyToHost(ptr, src[j], bytes);
                     PROFILE_END(t_cpy_to_host)
@@ -9862,7 +9862,7 @@ STATIC void nb_accv(
                   mapped_offset = _get_offset_memory(reg_entry, iov[0].dst[0]);
                   dst0 = iov[0].dst[0];
                   for (j=0; j<limit; j++) {
-                    l_ptr = mapped_offset + (ptrdiff_t)(dst[j]-dst0);
+                    (ptrdiff_t)l_ptr = (ptrdiff_t)mapped_offset + (ptrdiff_t)((ptrdiff_t)dst[j]-(ptrdiff_t)dst0);
                     _acc(datatype, bytes, l_ptr, src[j], scale);
                   }
                 }
@@ -9919,7 +9919,7 @@ STATIC void nb_accv_packed(
 
     /* allocate compressed iov */
     iov_size = 2*limit*sizeof(void*) + 2*sizeof(int);
-    iov_buf = malloc(iov_size);
+    iov_buf = (char*)malloc(iov_size);
     iov_off = 0;
     COMEX_ASSERT(iov_buf);
     /* copy limit */
@@ -9938,18 +9938,18 @@ STATIC void nb_accv_packed(
 
     /* allocate send buffer */
     packed_size = bytes * limit;
-    packed_buffer = malloc(packed_size);
+    packed_buffer = (char*)malloc(packed_size);
     COMEX_ASSERT(packed_buffer);
     packed_index = 0;
 #ifdef ENABLE_DEVICE
     if (on_host) {
       tsrc = src;
     } else {
-      tbuf = malloc(limit*bytes);
+      tbuf = (void**)malloc(limit*bytes);
       tsrc = (void**)malloc(limit*sizeof(void*));
       tsrc[0] = tbuf;
       for (i=1; i<limit; i++) {
-        tsrc[i] = tsrc[i-1]+bytes;
+        (ptrdiff_t)tsrc[i] = (ptrdiff_t)tsrc[i-1]+bytes;
       }
       for (i=0; i<limit; i++) {
         copyToHost(tsrc[i],src[i],bytes);
@@ -10007,7 +10007,7 @@ STATIC void nb_accv_packed(
         fence_array[master_rank] = 1;
 
         message_size = sizeof(header_t) + scale_size;
-        message = malloc(message_size);
+        message = (char*)malloc(message_size);
         COMEX_ASSERT(message);
         header = (header_t*)message;
         header->operation = operation;

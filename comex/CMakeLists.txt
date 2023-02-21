@@ -73,6 +73,7 @@ elseif (MPI_PR)
   
   set (COMEX_NETWORK_MPI_PR ON)
   include_directories(AFTER src-mpi-pr)
+  set_source_files_properties(${COMEX_DEVICE} PROPERTIES LANGUAGE "CXX")
 elseif (MPI3)
   set(COMEX_DEVICE
     src-mpi3/comex.c

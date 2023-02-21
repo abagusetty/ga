@@ -98,7 +98,7 @@ static void _create_group_and_igroup(
 #endif
 
     /* create, init, and insert the new node for the linked list */
-    new_group_list_item = malloc(sizeof(comex_igroup_t));
+    new_group_list_item = (comex_igroup_t*)malloc(sizeof(comex_igroup_t));
     new_group_list_item->next = NULL;
     new_group_list_item->id = -1;
     new_group_list_item->comm = MPI_COMM_NULL;

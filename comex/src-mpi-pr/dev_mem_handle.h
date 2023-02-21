@@ -27,7 +27,7 @@ typedef struct {
 #include <sycl/backend/level_zero.hpp>
 
 #include <sycl/sycl.hpp>
-
+#include "sycl_device.hpp"
 #include <oneapi/mkl/blas.hpp>
 typedef struct {
   ze_device_handle_t zeDevice;

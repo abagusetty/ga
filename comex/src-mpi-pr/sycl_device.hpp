@@ -11,12 +11,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-#if __has_include(<sycl/sycl.hpp>)
 #include <sycl/sycl.hpp>
-#else
-#include <sycl.hpp>
-namespace sycl = cl::sycl;
-#endif
 
 class device_ext: public sycl::device {
 public:
@@ -44,7 +39,7 @@ public:
     return DEFAULT_DEVICE_ID;
   }
   int device2devID(sycl::device& syclDev) {
-    auto it = find(_dev2ID.begin(), _dev2ID.end(), K);
+    auto it = find(_dev2ID.begin(), _dev2ID.end(), syclDev);
     if (it != _dev2ID.end()) {
       int index = it - _dev2ID.begin();
       return index;
@@ -110,7 +105,7 @@ private:
     if(id >= _devs.size()) { throw std::runtime_error("invalid device id"); }
   }
 
-  std::vector<sycl::queue> _dev2ID;
+  std::vector<sycl::device> _dev2ID;
   std::vector<std::pair<std::shared_ptr<sycl::queue>, std::shared_ptr<sycl::context>>> _devs;
   /// DEFAULT_DEVICE_ID is used, if current_device() can not find current
   /// thread id in _thread2dev_map, which means default device should be used
@@ -124,7 +119,7 @@ private:
 static inline void syclGetDevice(int* id) { *id = dev_mgr::instance().current_device(); }
 /// Util function to convert sycl::device to ID (in int).
 static inline int syclGetDeviceID(sycl::device* dev) {
-  *id = dev_mgr::instance().device2devID(dev);
+  return dev_mgr::instance().device2devID(*dev);
 }
 
 /// Util function to get the current sycl::queue
