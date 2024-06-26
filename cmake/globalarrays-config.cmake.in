@@ -64,7 +64,7 @@ if(ENABLE_BLAS)
   endif()
 
   if(ENABLE_DPCPP)
-    if(NOT TARGET MKL::MKL_SYCL)
+    if(NOT TARGET MKL::MKL_SYCL::BLAS)
       find_package(MKL CONFIG REQUIRED PATHS ${LINALG_PREFIX} NO_DEFAULT_PATH)
     endif()
   endif()
